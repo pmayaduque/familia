@@ -21,8 +21,8 @@ class Instance:
         self.deconsolidation_cost = []
         self.product_return_cost = []
         self.deconsolidation_capacity = []
-        self.input_throughput = []
-        self.output_throughput = []
+        self.processing_capacity_at_the_entrance = []
+        self.processing_capacity_at_the_exit = []
         self.storage_capacity = []
         self.raw_material_requirement = []
         self.arc_capacity = []
@@ -170,7 +170,7 @@ class DeconsolidationCapacity:
         self.capacity = capacity
 
 
-class InputThroughput:
+class ProcessingCapacityAtTheEntrance:
     def __init__(self, id, id_transfer_node, time_frame, capacity):
         self.id = id
         self.id_transfer_node = id_transfer_node
@@ -178,7 +178,7 @@ class InputThroughput:
         self.capacity = capacity
 
 
-class OutputThroughput:
+class ProcessingCapacityAtTheExit:
     def __init__(self, id, id_transfer_node, time_frame, capacity):
         self.id = id
         self.id_transfer_node = id_transfer_node

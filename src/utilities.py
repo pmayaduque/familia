@@ -122,15 +122,17 @@ def read_excel_file():
         product_return_cost = ProductReturnCost(id, transfer_node, time_frame, df.loc[row, "costoDevolucion"])
         deconsolidation_capacity = DeconsolidationCapacity(id, transfer_node, time_frame,
                                                            df.loc[row, "capacidadDesconsolidacion"])
-        input_throughput = InputThroughput(id, transfer_node, time_frame, df.loc[row, "capacidadProcesamientoIn"])
-        output_throughput = OutputThroughput(id, transfer_node, time_frame, df.loc[row, "capacidadProcesamientoOut"])
+        processing_capacity_at_the_entrance= ProcessingCapacityAtTheEntrance(id, transfer_node, time_frame,
+                                                                             df.loc[row, "capacidadProcesamientoIn"])
+        processing_capacity_at_the_exit = ProcessingCapacityAtTheExit(id, transfer_node, time_frame,
+                                                                      df.loc[row, "capacidadProcesamientoOut"])
         storage_capacity = StorageCapacity(id, transfer_node, time_frame, df.loc[row, "capacidadAlmacenamiento"])
 
         # Adding data to the instance
         instance.product_return_cost.append(product_return_cost)
         instance.deconsolidation_capacity.append(deconsolidation_capacity)
-        instance.input_throughput.append(input_throughput)
-        instance.output_throughput.append(output_throughput)
+        instance.processing_capacity_at_the_entrance.append(processing_capacity_at_the_entrance)
+        instance.processing_capacity_at_the_exit.append(processing_capacity_at_the_exit)
         instance.storage_capacity.append(storage_capacity)
 
     # Requerimiento de materia prima
