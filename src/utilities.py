@@ -1,9 +1,11 @@
 from src.entities import *
+import os
 import pandas as pd
 import numpy as np
 
 
-def read_excel_file(route):
+def read_excel_file(filename, filepath =os.path.dirname(os.getcwd()) + "/data/"):
+    route = filepath + filename
     excel_file = pd.ExcelFile(route)
     sheet_names = pd.read_excel(excel_file, 'Conjuntos')
     parameter_sheet_names = pd.read_excel(excel_file, "Parametros")
@@ -321,11 +323,11 @@ def set_processing_cost(df: pd.DataFrame, id: str, id_transfer_node: str, id_raw
 
 
 def set_deconsolidation_cost(df: pd.DataFrame, id: str, id_transfer_node: str, id_raw_material: str, cost_heading: str):
-    costs = []
+    costs = {}
     for row in range(len(df.index)):
         cost = DeconsolidationCost(df.loc[row, id], df.loc[row, id_transfer_node], df.loc[row, id_raw_material],
                                    df.loc[row, cost_heading])
-        costs.append(cost)
+        costs[(cost.id_transfer_node, cost.id_raw_material)] = cost.cost
     return costs
 
 
@@ -360,20 +362,20 @@ def set_processing_capacity_at_exit(df: pd.DataFrame, id: str, id_transfer_node:
 
 def set_deconsolidation_capacity(df: pd.DataFrame, id: str, id_transfer_node: str, time_frame: str,
                                  capacity_heading: str):
-    capacities = []
+    capacities = {}
     for row in range(len(df.index)):
-        capacity = DeconsolidationCapacity(df.loc[row, id], df.loc[row, id_transfer_node], df.loc[row, time_frame],
+        cap = DeconsolidationCapacity(df.loc[row, id], df.loc[row, id_transfer_node], df.loc[row, time_frame],
                                            df.loc[row, capacity_heading])
-        capacities.append(capacity)
+        capacities[(cap.id_transfer_node, cap.time_frame)] = cap.capacity
     return capacities
 
 
 def set_storage_capacity(df: pd.DataFrame, id: str, id_transfer_node: str, time_frame: str, capacity_heading: str):
-    capacities = []
+    capacities = {}
     for row in range(len(df.index)):
-        capacity = StorageCapacity(df.loc[row, id], df.loc[row, id_transfer_node],
+        cap = StorageCapacity(df.loc[row, id], df.loc[row, id_transfer_node],
                                    df.loc[row, time_frame], df.loc[row, capacity_heading])
-        capacities.append(capacity)
+        capacities[(cap.id_transfer_node, cap.time_frame)] = cap.capacity
     return capacities
 
 

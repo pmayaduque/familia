@@ -23,12 +23,12 @@ class Instance:
         self.raw_material_availability = {}
         self.lead_time = []
         self.processing_cost = []
-        self.deconsolidation_cost = []
+        self.deconsolidation_cost = {}
         self.product_return_cost = []
-        self.deconsolidation_capacity = []
+        self.deconsolidation_capacity = {}
         self.processing_capacity_at_the_entrance = []
         self.processing_capacity_at_the_exit = []
-        self.storage_capacity = []
+        self.storage_capacity = {}
         self.raw_material_requirement = []
         self.arc_capacity = []
         self.transport_cost = {}

@@ -60,11 +60,14 @@ def create_supply_model(instance: Instance):
     model.transport_cost = pe.Param(model.A, model.C, initialize=transport_cost_init(instance))
     model.arc_capacity = pe.Param(model.A, model.C, model.T, initialize=arc_capacity_init(instance))
     model.processing_cost = pe.Param(model.I, model.M, model.C, initialize=instance.processing_cost)
+    model.deconsolidation_cost = pe.Param(model.I, model.M, initialize=instance.deconsolidation_cost)
 
     # Parámetros de los nodos intermedios
 
     model.initial_inventory = pe.Param(model.I, model.M, model.C, initialize=initial_inventory_init(model, instance))
     model.storage_cost = pe.Param(model.I, initialize=storage_cost_init(instance))
+    model.deconsolidation_capacity = pe.Param(model.I, model.T, initialize=instance.deconsolidation_capacity)
+    model.storage_capacity = pe.Param(model.I, model.T, initialize=instance.storage_capacity)
 
     # Parámetros asociados a los destinos de MP
 
@@ -81,11 +84,15 @@ def create_supply_model(instance: Instance):
 
     # Función objetivo
 
+    #Costo asociado a la compra de materia prima en los diferentes orígenes
+
     def total_purchase_cost_rule(model):
         return sum(model.purchase_cost[o, m, t] * model.purchase_quantity[o, m, t]
                    for o in model.O for m in model.M for t in model.T if (o, m, t) in model.OMT)
 
     model.total_purchase_cost = pe.Expression(rule=total_purchase_cost_rule)
+
+    #Costo asociado al transporte de MP en los diferentes arcos de la red
 
     def total_transport_cost_rule(model):
         return sum(model.transport_cost[i, j, c] * model.transport[i, j, m, c, t]
@@ -94,14 +101,27 @@ def create_supply_model(instance: Instance):
 
     model.total_transport_cost = pe.Expression(rule=total_transport_cost_rule)
 
+    #Costo asociado al almacenamiento de MP en los diferentes nodos
+
     def total_inventory_cost_rule(model):
         return sum(model.inventory[i, m, c, t] * model.storage_cost[i] for i, m, c, t in model.IMCT)
 
     model.total_inventory_cost = pe.Expression(rule=total_inventory_cost_rule)
 
-    model.logistic_cost = pe.Expression(expr=model.total_transport_cost)
+    #Costo asociado a la desconsolidación
 
-    model.objective = pe.Objective(expr=model.total_purchase_cost + model.logistic_cost + model.total_inventory_cost)
+    def total_deconsolidation_cost_rule(model):
+        return sum(model.deconsolidation[i, m, t] * model.deconsolidation_cost[i, m]
+                   for i in model.I for m in model.M for t in model.T)
+
+    model.total_deconsolidation_cost = pe.Expression(rule=total_deconsolidation_cost_rule)
+
+    model.logistic_cost = pe.Expression(expr=model.total_transport_cost + model.total_inventory_cost +
+                                             model.total_deconsolidation_cost)
+
+    model.objective = pe.Objective(expr=model.total_purchase_cost + model.logistic_cost)
+
+    ##############################################################################################################
 
     # Restricciones del modelo
 
@@ -164,6 +184,22 @@ def create_supply_model(instance: Instance):
     model.flow_in_transfer_nodes_rule = pe.Constraint(model.I, model.M, model.C, model.T,
                                                       rule=flow_in_transfer_nodes_rule)
 
+    #Restricción de capacidad de desconsolidación
+
+    def deconsolidation_capacity_rule(model, i, t):
+        return sum(model.deconsolidation[i, m, t] for m in model.M) <= model.deconsolidation_capacity[i, t]
+
+    model.deconsolidation_capacity_rule = pe.Constraint(model.I, model.T, rule=deconsolidation_capacity_rule)
+
+
+    #Restricciones de capacidad de almacenamiento
+
+    def storage_capacity_rule(model, i, t):
+        return sum(model.inventory[i, m, c, t] for m in model.M for c in model.C if (i, m, c, t) in model.IMCT) \
+               <= model.storage_capacity[i, t]
+
+    model.storage_capacity_rule = pe.Constraint(model.I, model.T, rule=storage_capacity_rule)
+
     # Flujo para cumplir los requerimientos de MP en las plantas
 
     def raw_material_requirement_rule(model, d, m, t):
@@ -174,6 +210,7 @@ def create_supply_model(instance: Instance):
              return pe.Constraint.Skip
 
     model.raw_material_requirement_rule = pe.Constraint(model.D, model.M, model.T, rule=raw_material_requirement_rule)
+
 
     return model
 

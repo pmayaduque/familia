@@ -2,8 +2,7 @@ import src.utilities as ut
 from pyomo.environ import *
 from src.optimization_model import create_supply_model
 
-route = r'E:\Dropbox\Dropbox\Daniel Villa\Consultoría\Proyecto Familia\Modelo matemático\20200730 - Datos de entrada ' \
-        r'del modelo V2 - Prueba modelo.xlsx '
+route = r'20200730 - Datos de entrada del modelo V2 - Prueba modelo.xlsx '
 instance = ut.read_excel_file(route)
 
 #Solver information
@@ -14,11 +13,11 @@ solver = SolverFactory(solvername, executable=solverpath_exe)
 #Create model
 model = create_supply_model(instance)
 solver.solve(model)
-#model.requirement.pprint()
 model.purchase_quantity.pprint()
 model.transport.pprint()
 model.inventory.pprint()
 model.deconsolidation.pprint()
+
 print(value(model.total_purchase_cost))
 print(value(model.objective))
 
